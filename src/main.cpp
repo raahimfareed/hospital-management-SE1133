@@ -90,6 +90,8 @@ void SignupMenu(const string& username, string& menu_location, string& submenu_l
 
 void AdminMainMenu(const string& username, string& menu_location, string& submenu_location);
 
+void AdminSubmenu(const string& username, string& menu_location, string& submenu_location, string submenu_type);
+
 void Signup(string type);
 bool Login(string type);
 bool Logout();
@@ -162,7 +164,7 @@ int main()
 						}
 						loop = true;
 						cout << Error(1) + '\n' // Invalid option
-							 << "Press any key to continue\n";
+							 << "Press [Enter/Return] Key to continue\n";
 						cin.get();
 					}
 				} while (loop);
@@ -172,13 +174,13 @@ int main()
 				if (Logout())
 				{
 					cout << "\u001b[1;32mLogged Out!\u001b[0m\n"
-						 << "Press any key to return to main menu\n";
+						 << "Press [Enter/Return] Key to return to main menu\n";
 					cin.get();
 				}
 				else
 				{
 					cout << Error(6) + '\n' // No User logged in
-						 << "Press any key to return to main menu\n";
+						 << "Press [Enter/Return] Key to return to main menu\n";
 					cin.ignore(numeric_limits<streamsize>::max(), '\n');
 					cin.get();
 				}
@@ -215,7 +217,7 @@ int main()
 
 						loop = true;
 						cout << Error(1) + '\n' // Invalid option
-							 << "Press any key to return to main menu\n";
+							 << "Press [Enter/Return] Key to return to main menu\n";
 						cin.get();
 					}
 				} while (loop);
@@ -223,7 +225,7 @@ int main()
 			else
 			{
 				cout << Error(1) + '\n' // Invalid Option
-					 << "Press any key to return to main menu\n";
+					 << "Press [Enter/Return] Key to return to main menu\n";
 				cin.get();
 			}
 			break;
@@ -231,7 +233,7 @@ int main()
 			if (g_user_precedence < 2)
 			{
 				cout << Error(8) + '\n' // User needs to login
-					 << "Press any key to return to main menu\n";
+					 << "Press [Enter/Return] Key to return to main menu\n";
 				cin.get();
 			}
 			break;
@@ -239,27 +241,58 @@ int main()
 			if (g_user_precedence != 4 && !(g_user_precedence > 4))
 			{
 				cout << Error(9) + '\n' // [Restricted access] Only doctors can access this menu
-					 << "Press any key to return to main menu\n";
+					 << "Press [Enter/Return] Key to return to main menu\n";
 				cin.get();
 			}
 			else
 			{
 				cout << Error(10) + '\n' // [Restricted access] Only doctors can access this menu
-					 << "Press any key to return to main menu\n";
+					 << "Press [Enter/Return] Key to return to main menu\n";
 				cin.get();
 			}
 			
 			break;
 		case 'M':
-			if (g_user_precedence < 8)
+			if (g_user_precedence >= 8 && g_logged_in)
 			{
-				cout << Error(9) + '\n' // [Restricted access]
-					 << "Press any key to return to main menu\n";
-				cin.get();
+				bool loop;
+				do
+				{
+					AdminMainMenu(g_username, menu_location, submenu_location);
+					cin >> menu_option;
+					cin.ignore(numeric_limits<streamsize>::max(), '\n');
+					loop = false;
+					switch (toupper(menu_option[0]))
+					{
+					case 'P':
+						AdminSubmenu(g_username, menu_location, submenu_location, "p");
+						break;
+					case 'D':
+						AdminSubmenu(g_username, menu_location, submenu_location, "d");
+						break;
+					case 'M':
+						AdminSubmenu(g_username, menu_location, submenu_location, "m");
+						break;
+					case 'H':
+						loop = true;
+						break;
+					default:
+						if (toupper(menu_option[0]) == 'E')
+						{
+							break;
+						}
+						loop = true;
+						cout << Error(1) + '\n' // Invalid option
+							<< "Press [Enter/Return] Key to continue\n";
+						cin.get();
+					}
+				} while (loop);
 			}
 			else
 			{
-				
+				cout << Error(9) + '\n' // [Restricted access]
+					 << "Press [Enter/Return] Key to return to main menu\n";
+				cin.get();
 			}
 			
 			break;
@@ -274,7 +307,7 @@ int main()
 			break;
 		default:
 			cout << Error(1) + '\n' // Invalid option
-				 << "Press any key to return to main menu\n";
+				 << "Press [Enter/Return] Key to return to main menu\n";
 			cin.ignore(numeric_limits<streamsize>::max(), '\n');
 			cin.get();
 		}
@@ -292,11 +325,11 @@ void Header()
 void InputPlaceholder(const string& username, const string& menu_location, const string& submenu_location)
 {
 	if (!g_logged_in)
-		cout << "\u001b[1;35m[Guest@\u001b[0m";
+		cout << "\u001b[1;31m[Guest@\u001b[0m";
 	else
-		cout << "\u001b[1;35m[" + username + "@\u001b[0m";
+		cout << "\u001b[1;31m[" + username + "@\u001b[0m";
 
-	cout << "\u001b[1;35m" + menu_location + " " + submenu_location + "]: \u001b[0m";
+	cout << "\u001b[1;31m" + menu_location + " " + submenu_location + "]: \u001b[0m";
 }
 
 void MainMenu(const string& username, string& menu_location, string& submenu_location)
@@ -375,6 +408,7 @@ void AdminMainMenu(const string& username, string& menu_location, string& submen
 {
 	system("cls");
 	menu_location = "admin-main-menu";
+	submenu_location = "~";
 
 	Header();
 	cout << "----------------------------------\n"
@@ -388,6 +422,48 @@ void AdminMainMenu(const string& username, string& menu_location, string& submen
 		 << "----------------------------------\n";
 
 	InputPlaceholder(username, menu_location, submenu_location);
+}
+
+void AdminSubmenu(const string& username, string& menu_location, string& submenu_location, string submenu_type)
+{
+	system("cls");
+	menu_location = "admin-main-menu";
+
+	Header();
+
+	cout << "----------------------------------\n"
+		 << "\u001b[1;36mAdmin Main Menu\u001b[0m\n"
+		 << "----------------------------------\n";
+
+	switch (toupper(submenu_type[0]))
+	{
+		case 'P':
+			submenu_location = "patients";
+			cout << "\u001b[1;33m[A]\u001b[0m Show all Patients\n"
+				 << "\u001b[1;33m[D]\u001b[0m Discharge Patient\n"
+				 << "\u001b[1;33m[R]\u001b[0m Delete Patients Database \u001b[1;31m[WARNING: IRREVERSIBLE]\u001b[0m\n";
+			break;
+		case 'D':
+			submenu_location = "doctors";
+			
+			cout << "\u001b[1;33m[A]\u001b[0m Show all Doctors\n"
+				 << "\u001b[1;33m[B]\u001b[0m Block Doctor\n"
+				 << "\u001b[1;33m[R]\u001b[0m Delete Doctors Database \u001b[1;31m[WARNING: IRREVERSIBLE]\u001b[0m\n";
+			break;
+		case 'M':
+			submenu_location = "admins";
+			cout << "\u001b[1;33m[A]\u001b[0m Show all Admins\n"
+				 << "\u001b[1;33m[B]\u001b[0m Block Admin\n"
+				 << "\u001b[1;33m[X]\u001b[0m Format Program \u001b[1;31m[WARNING: ALL DATA WILL BE DELETED!!!]\u001b[0m\n";
+				 
+			break;
+	}
+
+	cout << "\033[1;33m[E]\033[0m Previous Menu\n"
+		 << "----------------------------------\n";
+
+	InputPlaceholder(username, menu_location, submenu_location);
+	system("pause");
 }
 
 void Signup(string type)
@@ -443,7 +519,7 @@ void Signup(string type)
 		cout << "\u001b[1;32m" + username + " created!\u001b[0m\n";
 	}
 
-	cout << "Press any key to return to main menu\n";
+	cout << "Press [Enter/Return] Key to return to main menu\n";
 	cin.get();
 }
 
@@ -486,7 +562,7 @@ bool Login(string type)
 	if (!user_exists)
 	{
 		cout << "\u001b[1;31m" + username + " doesn't exist!\u001b[0m\n"
-			 << "Press any key to return to main menu\n";
+			 << "Press [Enter/Return] Key to return to main menu\n";
 		// cin.ignore(numeric_limits<streamsize>::max(), '\n');
 		cin.get();
 		return false;
@@ -498,7 +574,7 @@ bool Login(string type)
 			g_logged_in = true;
 			g_username = username;
 			cout << "\u001b[1;32mLogged In!\u001b[0m\n"
-				 << "Press any key to return to main menu\n";
+				 << "Press [Enter/Return] Key to return to main menu\n";
 			PrecedenceSet(tolower(type[0]));
 			// cin.ignore(numeric_limits<streamsize>::max(), '\n');
 			cin.get();
@@ -517,7 +593,7 @@ bool Login(string type)
 					g_logged_in = true;
 					g_username = username;
 					cout << "\u001b[1;32mLogged In!\u001b[0m\n"
-						 << "Press any key to return to main menu\n";
+						 << "Press [Enter/Return] Key to return to main menu\n";
 					PrecedenceSet(tolower(type[0]));
 					// cin.ignore(numeric_limits<streamsize>::max(), '\n');
 					cin.get();
@@ -528,7 +604,7 @@ bool Login(string type)
 		}
 
 		cout << Error(5) + '\n' // Exceeded password tries
-			 << "Press any key to return to main menu\n";
+			 << "Press [Enter/Return] Key to return to main menu\n";
 		// cin.ignore(numeric_limits<streamsize>::max(), '\n');
 		cin.get();
 		return false;
