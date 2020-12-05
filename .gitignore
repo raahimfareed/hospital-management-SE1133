@@ -1,4 +1,7 @@
 .vscode/
 build/
+test/
 hms.exe
 p_accounts.db
+m_accounts.db
+d_accounts.db
