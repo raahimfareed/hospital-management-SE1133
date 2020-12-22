@@ -50,7 +50,7 @@ void Header();
  *
  * @returns void
  */
-void InputPlaceholder(const string& username, const string& menu_location, const string& submenu_location);
+void InputPlaceholder(const string &username, const string &menu_location, const string &submenu_location);
 
 /**
  * MainMenu
@@ -62,7 +62,7 @@ void InputPlaceholder(const string& username, const string& menu_location, const
  * changes it to main-menu
  * @returns void
  */
-void MainMenu(const string& username, string& menu_location, string& submenu_location);
+void MainMenu(const string &username, string &menu_location, string &submenu_location);
 
 /**
  * LoginMenu
@@ -74,7 +74,7 @@ void MainMenu(const string& username, string& menu_location, string& submenu_loc
  * changes it to main-menu
  * @returns void
  */
-void LoginMenu(const string& username, string& menu_location, string& submenu_location);
+void LoginMenu(const string &username, string &menu_location, string &submenu_location);
 
 /**
  * SignupMenu
@@ -86,11 +86,11 @@ void LoginMenu(const string& username, string& menu_location, string& submenu_lo
  * changes it to main-menu
  * @returns void
  */
-void SignupMenu(const string& username, string& menu_location, string& submenu_location);
+void SignupMenu(const string &username, string &menu_location, string &submenu_location);
 
-void AdminMainMenu(const string& username, string& menu_location, string& submenu_location);
+void AdminMainMenu(const string &username, string &menu_location, string &submenu_location);
 
-void AdminSubmenu(const string& username, string& menu_location, string& submenu_location, string submenu_type);
+void AdminSubmenu(const string &username, string &menu_location, string &submenu_location, string submenu_type);
 
 void Signup(string type);
 bool Login(string type);
@@ -98,14 +98,29 @@ bool Logout();
 
 string Error(int error_code = 0);
 
-void PrecedenceSet(const char& type = 'g');
+void PrecedenceSet(const char &type = 'g');
 
+void PatientMenu(const string &username, string &menu_location, string &submenu_location);
+void Patient(const string &username, string &menu_location, string &submenu_location);
 
 // Structs
+struct PatientAppointment
+{
+	string username;
+	string query;
+};
 
+struct PatientMessage
+{
+	string doctor;
+	string patient;
+	string message;
+};
 
 // Global Constants
 // No constants yet
+int const c_total_patient_message_limit = 1000;
+int const c_total_patient_appointment_limit = 1000;
 
 // Global Variables
 bool g_logged_in = false;
@@ -118,6 +133,12 @@ string g_username;
  * 8 - Management
  */
 int g_user_precedence = 0;
+
+int g_total_appointments = 0;
+PatientAppointment Appointments[c_total_patient_appointment_limit];
+int g_total_messages = 0;
+PatientMessage PatientMessages[c_total_patient_message_limit];
+
 
 int main()
 {
@@ -185,7 +206,7 @@ int main()
 					cin.get();
 				}
 			}
-			
+
 			break;
 		case 'S':
 			if (!g_logged_in)
@@ -230,7 +251,7 @@ int main()
 			}
 			break;
 		case 'P':
-			if (g_user_precedence < 2)
+			if (g_user_precedence < 4)
 			{
 				cout << Error(8) + '\n' // User needs to login
 					 << "Press [Enter/Return] Key to return to main menu\n";
@@ -238,19 +259,17 @@ int main()
 			}
 			break;
 		case 'D':
-			if (g_user_precedence != 4 && !(g_user_precedence > 4))
-			{
-				cout << Error(9) + '\n' // [Restricted access] Only doctors can access this menu
-					 << "Press [Enter/Return] Key to return to main menu\n";
-				cin.get();
-			}
-			else
+			if (g_user_precedence != 4)
 			{
 				cout << Error(10) + '\n' // [Restricted access] Only doctors can access this menu
 					 << "Press [Enter/Return] Key to return to main menu\n";
 				cin.get();
 			}
-			
+			else
+			{
+				
+			}
+
 			break;
 		case 'M':
 			if (g_user_precedence >= 8 && g_logged_in)
@@ -266,12 +285,18 @@ int main()
 					{
 					case 'P':
 						AdminSubmenu(g_username, menu_location, submenu_location, "p");
+						cin >> menu_option;
+						cin.ignore(numeric_limits<streamsize>::max(), '\n');
 						break;
 					case 'D':
 						AdminSubmenu(g_username, menu_location, submenu_location, "d");
+						cin >> menu_option;
+						cin.ignore(numeric_limits<streamsize>::max(), '\n');
 						break;
 					case 'M':
 						AdminSubmenu(g_username, menu_location, submenu_location, "m");
+						cin >> menu_option;
+						cin.ignore(numeric_limits<streamsize>::max(), '\n');
 						break;
 					case 'H':
 						loop = true;
@@ -283,7 +308,7 @@ int main()
 						}
 						loop = true;
 						cout << Error(1) + '\n' // Invalid option
-							<< "Press [Enter/Return] Key to continue\n";
+							 << "Press [Enter/Return] Key to continue\n";
 						cin.get();
 					}
 				} while (loop);
@@ -294,7 +319,7 @@ int main()
 					 << "Press [Enter/Return] Key to return to main menu\n";
 				cin.get();
 			}
-			
+
 			break;
 		case 'H':
 			cout << "Help\n";
@@ -305,10 +330,18 @@ int main()
 		case 'E':
 			main_loop = 'N';
 			break;
+		case 'A':
+			if (g_user_precedence > 0)
+			{
+				if (g_user_precedence == 2)
+				{
+					Patient(g_username, menu_location, submenu_location);
+				}
+				break;
+			}
 		default:
 			cout << Error(1) + '\n' // Invalid option
 				 << "Press [Enter/Return] Key to return to main menu\n";
-			cin.ignore(numeric_limits<streamsize>::max(), '\n');
 			cin.get();
 		}
 
@@ -322,7 +355,7 @@ void Header()
 	cout << "=== \u001b[1;7;32mHospital Management System\u001b[0m ===\n";
 }
 
-void InputPlaceholder(const string& username, const string& menu_location, const string& submenu_location)
+void InputPlaceholder(const string &username, const string &menu_location, const string &submenu_location)
 {
 	if (!g_logged_in)
 		cout << "\u001b[1;31m[Guest@\u001b[0m";
@@ -332,7 +365,7 @@ void InputPlaceholder(const string& username, const string& menu_location, const
 	cout << "\u001b[1;31m" + menu_location + " " + submenu_location + "]: \u001b[0m";
 }
 
-void MainMenu(const string& username, string& menu_location, string& submenu_location)
+void MainMenu(const string &username, string &menu_location, string &submenu_location)
 {
 	menu_location = "main-menu";
 	system("cls");
@@ -348,12 +381,26 @@ void MainMenu(const string& username, string& menu_location, string& submenu_loc
 			 << "\u001b[1;33m[S]\u001b[0m Sign up\n";
 	}
 
-	cout << "\u001b[1;33m[P]\u001b[0m Patients\n"
-		 << "\u001b[1;33m[D]\u001b[0m Doctors\n"
-		 << "\u001b[1;33m[M]\u001b[0m Management\n"
-		 //  << "\u001b[1;33m[S]\u001b[0m Pharmacy\n"
-		 << "\u001b[1;33m[H]\u001b[0m Help\n"
+	if (g_user_precedence > 0)
+	{
+		cout << "\u001b[1;33m[A]\u001b[0m Account\n";
+	}
+
+	if (g_user_precedence > 3)
+	{
+		cout << "\u001b[1;33m[P]\u001b[0m Patients\n"
+		  	 << "\u001b[1;33m[D]\u001b[0m Doctors\n";
+	}
+	
+	if (g_user_precedence > 7)
+	{
+		cout << "\u001b[1;33m[M]\u001b[0m Management\n";
+	}
+
+	cout << "\u001b[1;33m[H]\u001b[0m Help\n"
 		 << "\u001b[1;33m[C]\u001b[0m Credits\n";
+		 
+		 
 
 	if (g_logged_in)
 	{
@@ -366,7 +413,7 @@ void MainMenu(const string& username, string& menu_location, string& submenu_loc
 	InputPlaceholder(username, menu_location, submenu_location);
 }
 
-void LoginMenu(const string& username, string& menu_location, string& submenu_location)
+void LoginMenu(const string &username, string &menu_location, string &submenu_location)
 {
 	system("cls");
 	menu_location = "login-menu";
@@ -385,7 +432,7 @@ void LoginMenu(const string& username, string& menu_location, string& submenu_lo
 	InputPlaceholder(username, menu_location, submenu_location);
 }
 
-void SignupMenu(const string& username, string& menu_location, string& submenu_location)
+void SignupMenu(const string &username, string &menu_location, string &submenu_location)
 {
 	system("cls");
 	menu_location = "signup-menu";
@@ -404,7 +451,7 @@ void SignupMenu(const string& username, string& menu_location, string& submenu_l
 	InputPlaceholder(username, menu_location, submenu_location);
 }
 
-void AdminMainMenu(const string& username, string& menu_location, string& submenu_location)
+void AdminMainMenu(const string &username, string &menu_location, string &submenu_location)
 {
 	system("cls");
 	menu_location = "admin-main-menu";
@@ -424,10 +471,11 @@ void AdminMainMenu(const string& username, string& menu_location, string& submen
 	InputPlaceholder(username, menu_location, submenu_location);
 }
 
-void AdminSubmenu(const string& username, string& menu_location, string& submenu_location, string submenu_type)
+void AdminSubmenu(const string &username, string &menu_location, string &submenu_location, string submenu_type)
 {
 	system("cls");
 	menu_location = "admin-main-menu";
+	int menu_level = submenu_type.length();
 
 	Header();
 
@@ -435,28 +483,33 @@ void AdminSubmenu(const string& username, string& menu_location, string& submenu
 		 << "\u001b[1;36mAdmin Main Menu\u001b[0m\n"
 		 << "----------------------------------\n";
 
-	switch (toupper(submenu_type[0]))
+	switch (menu_level)
 	{
+	case 1:
+		switch (toupper(submenu_type[0]))
+		{
 		case 'P':
 			submenu_location = "patients";
 			cout << "\u001b[1;33m[A]\u001b[0m Show all Patients\n"
-				 << "\u001b[1;33m[D]\u001b[0m Discharge Patient\n"
 				 << "\u001b[1;33m[R]\u001b[0m Delete Patients Database \u001b[1;31m[WARNING: IRREVERSIBLE]\u001b[0m\n";
 			break;
 		case 'D':
 			submenu_location = "doctors";
-			
+
 			cout << "\u001b[1;33m[A]\u001b[0m Show all Doctors\n"
-				 << "\u001b[1;33m[B]\u001b[0m Block Doctor\n"
 				 << "\u001b[1;33m[R]\u001b[0m Delete Doctors Database \u001b[1;31m[WARNING: IRREVERSIBLE]\u001b[0m\n";
 			break;
 		case 'M':
 			submenu_location = "admins";
 			cout << "\u001b[1;33m[A]\u001b[0m Show all Admins\n"
-				 << "\u001b[1;33m[B]\u001b[0m Block Admin\n"
 				 << "\u001b[1;33m[X]\u001b[0m Format Program \u001b[1;31m[WARNING: ALL DATA WILL BE DELETED!!!]\u001b[0m\n";
-				 
+
 			break;
+		}
+		break;
+
+	case 2:
+		break;
 	}
 
 	cout << "\033[1;33m[E]\033[0m Previous Menu\n"
@@ -580,28 +633,26 @@ bool Login(string type)
 			cin.get();
 			return true;
 		}
-		else
+
+		int password_tries = 1;
+		do
 		{
-			int password_tries = 1;
-			do
+			cout << Error(4) + '\n' // Invalid Password
+					<< "Please enter your password again: ";
+			getline(cin, password);
+			if (password == password_data)
 			{
-				cout << Error(4) + '\n' // Invalid Password
-					 << "Please enter your password again: ";
-				getline(cin, password);
-				if (password == password_data)
-				{
-					g_logged_in = true;
-					g_username = username;
-					cout << "\u001b[1;32mLogged In!\u001b[0m\n"
-						 << "Press [Enter/Return] Key to return to main menu\n";
-					PrecedenceSet(tolower(type[0]));
-					// cin.ignore(numeric_limits<streamsize>::max(), '\n');
-					cin.get();
-					return true;
-				}
-				password_tries++;
-			} while (password_tries <= 2);
-		}
+				g_logged_in = true;
+				g_username = username;
+				cout << "\u001b[1;32mLogged In!\u001b[0m\n"
+						<< "Press [Enter/Return] Key to return to main menu\n";
+				PrecedenceSet(tolower(type[0]));
+				// cin.ignore(numeric_limits<streamsize>::max(), '\n');
+				cin.get();
+				return true;
+			}
+			password_tries++;
+		} while (password_tries <= 2);
 
 		cout << Error(5) + '\n' // Exceeded password tries
 			 << "Press [Enter/Return] Key to return to main menu\n";
@@ -637,9 +688,9 @@ string Error(int error_code)
 		"Too many incorrect tries!",						  // 5
 		"No user logged in!",								  // 6
 		"Your password should be greater than 8 characters!", // 7
-		"You need to be logged in!", // 8
-		"Restricted Access", // 9
-		"You need to be a doctor to access this", // 10
+		"You need to be logged in!",						  // 8
+		"Restricted Access",								  // 9
+		"You need to be a doctor to access this",			  // 10
 	};
 
 	return "\u001b[1;31m" + errors[error_code] + "\u001b[0m";
@@ -665,5 +716,70 @@ void PrecedenceSet(const char &type)
 		g_user_precedence = 0;
 		break;
 	}
+}
+
+void PatientMenu(const string &username, string &menu_location, string &submenu_location)
+{
+	system("cls");
+	menu_location = "account-main-menu";
+	submenu_location = "~";
+
+	Header();
+	cout << "----------------------------------\n"
+		 << "\u001b[1;36mAccount\u001b[0m\n"
+		 << "----------------------------------\n"
+		 << "\u001b[1;33m[R]\u001b[0m Request Appointment\n"
+		 << "\u001b[1;33m[D]\u001b[0m Doctors Information\n"
+		 << "\u001b[1;33m[U]\u001b[0m User Information\n"
+		 << "\u001b[1;33m[M]\u001b[0m Messages\n"
+		 << "\033[1;33m[H]\033[0m Help\n"
+		 << "\033[1;33m[E]\033[0m Previous Menu\n"
+		 << "----------------------------------\n";
+
+	InputPlaceholder(username, menu_location, submenu_location);
+}
+
+void Patient(const string &username, string &menu_location, string &submenu_location)
+{
+	bool patient_loop = true;
+	string patient_menu;
+	do
+	{
+		PatientMenu(username, menu_location, submenu_location);
+		cin >> patient_menu;
+		cin.ignore(numeric_limits<streamsize>::max(), '\n');
+		switch (toupper(patient_menu[0]))
+		{
+			case 'R':
+				if (g_total_appointments <= 1000)
+				{
+					Appointments[g_total_appointments].username = username;
+					cout << "Please enter your condition/query: ";
+					getline(cin, Appointments[g_total_appointments].query);
+					g_total_appointments++;
+					cout << "Check your messages occasionally for a reply from the doctor\n"
+					 	 << "Press [Enter/Return] Key to return back to menu\n";
+					cin.get();
+				}
+				else
+				{
+					cout << Error(0) + '\n' // Error occurred
+					 	 << "Press [Enter/Return] Key to return to main menu\n";
+					cin.get();
+				}
+				break;
+			case 'M':
+				
+			case 'E':
+				patient_loop = false;
+				break;
+			default:
+				break;
+		}
+	} while (patient_loop);
+}
+
+string GetMessages(string username)
+{
 
 }
