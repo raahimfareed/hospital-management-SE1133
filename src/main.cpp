@@ -102,6 +102,9 @@ void PrecedenceSet(const char &type = 'g');
 
 void PatientMenu(const string &username, string &menu_location, string &submenu_location);
 void Patient(const string &username, string &menu_location, string &submenu_location);
+void GetUserMessages(const string &username);
+void GetDoctorsAvailable();
+void GetUserInformation(const string &username);
 
 // Structs
 struct PatientAppointment
@@ -138,7 +141,6 @@ int g_total_appointments = 0;
 PatientAppointment Appointments[c_total_patient_appointment_limit];
 int g_total_messages = 0;
 PatientMessage PatientMessages[c_total_patient_message_limit];
-
 
 int main()
 {
@@ -251,12 +253,16 @@ int main()
 			}
 			break;
 		case 'P':
-			if (g_user_precedence < 4)
+			if (g_user_precedence < 2)
 			{
 				cout << Error(8) + '\n' // User needs to login
 					 << "Press [Enter/Return] Key to return to main menu\n";
-				cin.get();
 			}
+			else
+			{
+				
+			}
+			cin.get();
 			break;
 		case 'D':
 			if (g_user_precedence != 4)
@@ -267,7 +273,6 @@ int main()
 			}
 			else
 			{
-				
 			}
 
 			break;
@@ -388,19 +393,17 @@ void MainMenu(const string &username, string &menu_location, string &submenu_loc
 
 	if (g_user_precedence > 3)
 	{
-		cout << "\u001b[1;33m[P]\u001b[0m Patients\n"
-		  	 << "\u001b[1;33m[D]\u001b[0m Doctors\n";
+		cout << "\u001b[1;33m[P]\u001b[0m Patients\n";
 	}
-	
+
 	if (g_user_precedence > 7)
 	{
-		cout << "\u001b[1;33m[M]\u001b[0m Management\n";
+		cout << "\u001b[1;33m[D]\u001b[0m Doctors\n"
+		 	 << "\u001b[1;33m[M]\u001b[0m Management\n";
 	}
 
 	cout << "\u001b[1;33m[H]\u001b[0m Help\n"
 		 << "\u001b[1;33m[C]\u001b[0m Credits\n";
-		 
-		 
 
 	if (g_logged_in)
 	{
@@ -638,14 +641,14 @@ bool Login(string type)
 		do
 		{
 			cout << Error(4) + '\n' // Invalid Password
-					<< "Please enter your password again: ";
+				 << "Please enter your password again: ";
 			getline(cin, password);
 			if (password == password_data)
 			{
 				g_logged_in = true;
 				g_username = username;
 				cout << "\u001b[1;32mLogged In!\u001b[0m\n"
-						<< "Press [Enter/Return] Key to return to main menu\n";
+					 << "Press [Enter/Return] Key to return to main menu\n";
 				PrecedenceSet(tolower(type[0]));
 				// cin.ignore(numeric_limits<streamsize>::max(), '\n');
 				cin.get();
@@ -721,7 +724,7 @@ void PrecedenceSet(const char &type)
 void PatientMenu(const string &username, string &menu_location, string &submenu_location)
 {
 	system("cls");
-	menu_location = "account-main-menu";
+	menu_location = "account-menu";
 	submenu_location = "~";
 
 	Header();
@@ -750,36 +753,183 @@ void Patient(const string &username, string &menu_location, string &submenu_loca
 		cin.ignore(numeric_limits<streamsize>::max(), '\n');
 		switch (toupper(patient_menu[0]))
 		{
-			case 'R':
-				if (g_total_appointments <= 1000)
-				{
-					Appointments[g_total_appointments].username = username;
-					cout << "Please enter your condition/query: ";
-					getline(cin, Appointments[g_total_appointments].query);
-					g_total_appointments++;
-					cout << "Check your messages occasionally for a reply from the doctor\n"
-					 	 << "Press [Enter/Return] Key to return back to menu\n";
-					cin.get();
-				}
-				else
-				{
-					cout << Error(0) + '\n' // Error occurred
-					 	 << "Press [Enter/Return] Key to return to main menu\n";
-					cin.get();
-				}
-				break;
-			case 'M':
-				
-			case 'E':
-				patient_loop = false;
-				break;
-			default:
-				break;
+		case 'R':
+			if (g_total_appointments <= 1000)
+			{
+				Appointments[g_total_appointments].username = username;
+				cout << "Please enter your condition/query: ";
+				getline(cin, Appointments[g_total_appointments].query);
+				g_total_appointments++;
+				cout << "Check your messages occasionally for a reply from the doctor\n"
+					 << "Press [Enter/Return] Key to return back to menu\n";
+				cin.get();
+			}
+			else
+			{
+				cout << Error(0) + '\n' // Error occurred
+					 << "Press [Enter/Return] Key to return to main menu\n";
+				cin.get();
+			}
+			break;
+		case 'D':
+			GetDoctorsAvailable();
+			cout << "Press [Enter/Return] Key to continue\n";
+			cin.get();
+			break;
+		case 'U':
+			GetUserInformation(username);
+			cout << "Press [Enter/Return] Key to continue\n";
+			cin.get();
+			break;
+		case 'M':
+			GetUserMessages(username);
+			cout << "Press [Enter/Return] Key to continue\n";
+			cin.get();
+			break;
+		case 'E':
+			patient_loop = false;
+			break;
+		default:
+			break;
 		}
 	} while (patient_loop);
 }
 
-string GetMessages(string username)
+void GetUserMessages(const string &username)
 {
+	bool no_messages = true;
+	cout << "Doctor name\t\tMessage\n";
+	cout << "----------------------------------\n";
+	for (int i = 0; i < c_total_patient_message_limit; i++)
+	{
+		if (PatientMessages[i].patient == username)
+		{
+			no_messages = false;
+			cout << PatientMessages[i].doctor + "\t\t" + PatientMessages[i].message + '\n';
+		}
+	}
 
+	if (no_messages)
+	{
+		cout << "There are no messages available\n";
+	}
+}
+
+void GetDoctorsAvailable()
+{
+	// bool no_doctors = true;
+	string path = "d_accounts.db";
+	string user_data;
+	string delimiter = ";";
+	int id = 1;
+
+	ifstream doctors_file_i(path);
+	string username_data;
+	cout << "Id\tName\n";
+	cout << "----------------------------------\n";
+	while (getline(doctors_file_i, user_data))
+	{
+		username_data = user_data.substr(0, user_data.find(delimiter));
+		cout << to_string(id) + '\t' + username_data + '\n';
+	}
+	doctors_file_i.close();
+}
+
+void GetUserInformation(const string &username)
+{
+	int total_appointments = 0;
+	int total_messages = 0;
+
+	for (int i = 0; i < c_total_patient_appointment_limit; i++)
+	{
+		if (Appointments[i].username == username)
+		{
+			total_appointments++;
+		}
+	}
+
+	for (int i = 0; i < c_total_patient_message_limit; i++)
+	{
+		if (PatientMessages[i].patient == username)
+		{
+			total_messages++;
+		}
+	}
+	cout << "Your username: " + username + '\n'
+		 << "Total Appointment Requests: " + to_string(total_appointments) + '\n'
+		 << "Total Messages in Inbox: " + to_string(total_messages) + '\n';
+}
+
+void ManagePatientsMenu(const string &username, string &menu_location, string &submenu_location)
+{
+	system("cls");
+	menu_location = "patients-menu";
+	submenu_location = "~";
+
+	Header();
+	cout << "----------------------------------\n"
+		 << "\u001b[1;36mAccount\u001b[0m\n"
+		 << "----------------------------------\n"
+		 << "\u001b[1;33m[R]\u001b[0m Request Appointment\n"
+		 << "\u001b[1;33m[D]\u001b[0m Doctors Information\n"
+		 << "\u001b[1;33m[U]\u001b[0m User Information\n"
+		 << "\u001b[1;33m[M]\u001b[0m Messages\n"
+		 << "\033[1;33m[H]\033[0m Help\n"
+		 << "\033[1;33m[E]\033[0m Previous Menu\n"
+		 << "----------------------------------\n";
+
+	InputPlaceholder(username, menu_location, submenu_location);
+}
+
+void ManagePatients(const string &username, string &menu_location, string &submenu_location)
+{
+	bool patient_loop = true;
+	string patient_menu;
+	do
+	{
+		PatientMenu(username, menu_location, submenu_location);
+		cin >> patient_menu;
+		cin.ignore(numeric_limits<streamsize>::max(), '\n');
+		switch (toupper(patient_menu[0]))
+		{
+		case 'R':
+			if (g_total_appointments <= 1000)
+			{
+				Appointments[g_total_appointments].username = username;
+				cout << "Please enter your condition/query: ";
+				getline(cin, Appointments[g_total_appointments].query);
+				g_total_appointments++;
+				cout << "Check your messages occasionally for a reply from the doctor\n"
+					 << "Press [Enter/Return] Key to return back to menu\n";
+				cin.get();
+			}
+			else
+			{
+				cout << Error(0) + '\n' // Error occurred
+					 << "Press [Enter/Return] Key to return to main menu\n";
+				cin.get();
+			}
+			break;
+		case 'D':
+			GetDoctorsAvailable();
+			cout << "Press [Enter/Return] Key to continue\n";
+			cin.get();
+			break;
+		case 'U':
+			GetUserInformation(username);
+			cout << "Press [Enter/Return] Key to continue\n";
+			cin.get();
+			break;
+		case 'M':
+			GetUserMessages(username);
+			cout << "Press [Enter/Return] Key to continue\n";
+			cin.get();
+			break;
+		case 'E':
+			patient_loop = false;
+			break;
+		default:
+			break;
+		}
+	} while (patient_loop);
 }
