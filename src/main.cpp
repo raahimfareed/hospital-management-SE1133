@@ -1,16 +1,16 @@
-
 /**
- * This file is part of Hospital Management System.
- * Code written by Raahim Fareed
- * Registration Number: BSE203039
- * Class: 203 SE 1A
+ * @file main.cpp
+ * @author Raahim Fareed - BSE203039 (bse203039@cust.pk)
+ * @brief This program is a hospital management system and will store patient and doctor information and provide means of communication
+ * @version 1.0
+ * @date 2021-01-04
+ * 
+ * @copyright Copyright (c) 2021
+ * 
  */
 
-// ==============================================================
-// Headers
-// ==============================================================
-
 /**
+  * HEADERS
   * #include <iostream> - Used for basic input output operations on stream
   * #include <fstream> - Used for file streams
   * #include <limits> - Has numeric_limits which is being used for cin.ignore()
@@ -29,10 +29,6 @@
  * std - Standard
  */
 using namespace std;
-
-// ==============================================================
-// Function Declarations
-// ==============================================================
 
 /**
  * Header
@@ -124,6 +120,7 @@ void FormatProgram();
 void GetLog();
 char *GetCurrentTime();
 void CreateLog(const string &user, char *time, char type);
+string Credits();
 
 // Structs
 struct PatientAppointment
@@ -290,9 +287,6 @@ int main()
 					 << "Press [Enter/Return] Key to return to main menu\n";
 				cin.get();
 			}
-			else
-			{
-			}
 
 			break;
 		case 'M':
@@ -312,7 +306,8 @@ int main()
 			cout << "Help\n";
 			break;
 		case 'C':
-			cout << "Credits\n";
+			cout << Credits();
+			cin.get();
 			break;
 		case 'E':
 			main_loop = 'N';
@@ -810,12 +805,13 @@ void GetDoctorsAvailable()
 
 	ifstream doctors_file_i(path);
 	string username_data;
-	cout << "Id\tName\n";
+	cout << "Id\t\tName\n";
 	cout << "----------------------------------\n";
 	while (getline(doctors_file_i, user_data))
 	{
 		username_data = user_data.substr(0, user_data.find(delimiter));
-		cout << to_string(id) + '\t' + username_data + '\n';
+		cout << to_string(id) + "\t\t" + username_data + '\n';
+		id++;
 	}
 	doctors_file_i.close();
 }
@@ -848,8 +844,8 @@ void GetUserInformation(const string &username)
 void ManagePatientsMenu(const string &username, string &menu_location, string &submenu_location)
 {
 	system("cls");
-	menu_location = "patients-menu";
-	submenu_location = "~";
+	menu_location = "doctors-menu";
+	submenu_location = "patients";
 
 	Header();
 	cout << "----------------------------------\n"
@@ -901,14 +897,14 @@ void ManagePatients(const string &username, string &menu_location, string &subme
 void GetTotalPendingAppointments()
 {
 	cout << "----------------------------------\n"
-		 << "Id\tPatient\tQuery\n"
+		 << "Id\t\tPatient\t\tQuery\n"
 		 << "----------------------------------\n";
 
 	for (int i = 0; i < g_total_appointments; i++)
 	{
 		if (Appointments[i].username == "-")
 			continue;
-		cout << to_string(i) + '\t' + Appointments[i].username + '\t' + Appointments[i].query + '\n';
+		cout << to_string(i) + "\t\t" + Appointments[i].username + "\t\t" + Appointments[i].query + '\n';
 	}
 }
 
@@ -931,7 +927,6 @@ void MessageUser()
 		}
 		cout << "Please enter your patient's username: ";
 		getline(cin, patient);
-		cout << patient << '\n';
 		if (patient == "0")
 			return;
 		ifstream users_file_i(path);
@@ -1183,7 +1178,7 @@ void AdminGetUserMessages()
 		 << "----------------------------------\n";
 	for (int i = 0; i < g_total_messages; i++)
 	{
-		cout << i + 1 << '\t' + PatientMessages[i].doctor + '\t' + PatientMessages[i].patient + '\t' + PatientMessages[i].message + '\n';
+		cout << i + 1 << "\t\t" + PatientMessages[i].doctor + "\t\t" + PatientMessages[i].patient + "\t\t" + PatientMessages[i].message + '\n';
 	}
 	cout << "----------------------------------\n";
 	cout << "Press [Enter/Return] Key to return to menu\n";
@@ -1197,7 +1192,7 @@ void AdminGetAppointments()
 		 << "----------------------------------\n";
 	for (int i = 0; i < g_total_appointments; i++)
 	{
-		cout << i + 1 << '\t' + Appointments[i].username + '\t' + Appointments[i].query + '\n';
+		cout << i + 1 << "\t\t" + Appointments[i].username + "\t\t" + Appointments[i].query + '\n';
 	}
 	cout << "----------------------------------\n";
 	cout << "Press [Enter/Return] Key to return to menu\n";
@@ -1289,4 +1284,13 @@ void CreateLog(const string &user, char *time, char type)
 	string log_line = type + user + string(";") + time;
 	log_file << log_line;
 	log_file.close();
+}
+
+string Credits()
+{
+	string credits = string("Made by Raahim Fareed - BSE203039\n") +
+		   			 string("SE1133 - Introduction to Programming\n") +
+		   			 string("C++14, GCC and VSCode was used in the making\n") +
+		   			 string("Press [Enter/Return] key to return to menu");
+	return credits;
 }
