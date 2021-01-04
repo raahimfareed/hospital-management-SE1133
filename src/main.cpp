@@ -121,6 +121,7 @@ void GetLog();
 char *GetCurrentTime();
 void CreateLog(const string &user, char *time, char type);
 string Credits();
+string Help();
 
 // Structs
 struct PatientAppointment
@@ -303,7 +304,9 @@ int main()
 
 			break;
 		case 'H':
-			cout << "Help\n";
+			cout << Help()
+				 << "Press [Enter/Return] Key to return to main menu\n";
+			cin.get();
 			break;
 		case 'C':
 			cout << Credits();
@@ -1293,4 +1296,9 @@ string Credits()
 		   			 string("C++14, GCC and VSCode was used in the making\n") +
 		   			 string("Press [Enter/Return] key to return to menu");
 	return credits;
+}
+
+string Help()
+{
+	return "For help and documentation please visit https://github.com/raahimfareed/hospital-management-SE1133\n";
 }
