@@ -122,6 +122,7 @@ char *GetCurrentTime();
 void CreateLog(const string &user, char *time, char type);
 string Credits();
 string Help();
+void RemoveAppointment();
 
 // Structs
 struct PatientAppointment
@@ -480,6 +481,7 @@ void AdminSubmenu(const string &username, string &menu_location, string &submenu
 		case 'D':
 			submenu_location = "doctors";
 			cout << "\u001b[1;33m[A]\u001b[0m Show all Doctors\n"
+				 << "\u001b[1;33m[P]\u001b[0m Remove an appointment\n"
 				 << "\u001b[1;33m[R]\u001b[0m Delete Doctors Database \u001b[1;31m[WARNING: IRREVERSIBLE]\u001b[0m\n";
 			break;
 		case 'M':
@@ -855,6 +857,7 @@ void ManagePatientsMenu(const string &username, string &menu_location, string &s
 		 << "\u001b[1;36mPatients\u001b[0m\n"
 		 << "----------------------------------\n"
 		 << "\u001b[1;33m[A]\u001b[0m Pending Appointments\n"
+		 << "\u001b[1;33m[R]\u001b[0m Remove Appointments\n"
 		 << "\u001b[1;33m[M]\u001b[0m Send Message to Patient\n"
 		 << "\u001b[1;33m[P]\u001b[0m Patient Info\n"
 		 << "\033[1;33m[H]\033[0m Help\n"
@@ -905,8 +908,7 @@ void GetTotalPendingAppointments()
 
 	for (int i = 0; i < g_total_appointments; i++)
 	{
-		if (Appointments[i].username == "-")
-			continue;
+		if (Appointments[i].username == "-") continue;
 		cout << to_string(i) + "\t\t" + Appointments[i].username + "\t\t" + Appointments[i].query + '\n';
 	}
 }
@@ -1087,6 +1089,9 @@ void Admin(string &menu_location, string &submenu_location)
 					cout << "Please press [Enter/Return] key to return to menu";
 					cin.get();
 					break;
+				case 'P':
+					RemoveAppointment();
+					break;
 				case 'R':
 					ClearDoctorsDb();
 					break;
@@ -1195,6 +1200,7 @@ void AdminGetAppointments()
 		 << "----------------------------------\n";
 	for (int i = 0; i < g_total_appointments; i++)
 	{
+		if (Appointments[i].username == "-") continue;
 		cout << i + 1 << "\t\t" + Appointments[i].username + "\t\t" + Appointments[i].query + '\n';
 	}
 	cout << "----------------------------------\n";
@@ -1301,4 +1307,32 @@ string Credits()
 string Help()
 {
 	return "For help and documentation please visit https://github.com/raahimfareed/hospital-management-SE1133\n";
+}
+
+void RemoveAppointment()
+{
+	GetTotalPendingAppointments();
+	cout << "Enter Id of appointment you want end: ";
+	int id;
+	cin >> id;
+	cin.ignore();
+	if (id < g_total_appointments && id >= 0m)
+	{
+		if (Appointments[id].username == "-")
+		{
+			cout << "That is not a valid ID\n";
+		}
+		else
+		{
+			Appointments[id].username = "-";
+			Appointments[id].query = "-";
+			cout << "Appointment removed!\n";
+		}
+	}
+	else
+	{
+		cout << "That is not a valid ID\n";
+	}
+	cout << "Press [Enter/Return] key to return to menu\n";
+	cin.get();
 }
