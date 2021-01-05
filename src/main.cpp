@@ -1316,7 +1316,7 @@ void RemoveAppointment()
 	int id;
 	cin >> id;
 	cin.ignore();
-	if (id < g_total_appointments && id >= 0m)
+	if (id < g_total_appointments)
 	{
 		if (Appointments[id].username == "-")
 		{
